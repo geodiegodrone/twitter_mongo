@@ -26,10 +26,12 @@ EL CÓDIGO SE DIVIDO EN 7 PARTES
 #import sys
 import time
 import json
+import os
 import pandas as pd
 import pymongo
 from twython import Twython #Necesario instalarlo la primera vez de forma aislada: pip install Twython
 import timeit 
+from dotenv import load_dotenv
 
 
 
@@ -37,10 +39,15 @@ import timeit
 #      Información de las Key y Token disponible en la cuenta de Twitter Developer o la común compartida por el profesor
 ###### 
 
-APP_KEY = '4rMsRUcCoJKUFGcWFfN0S9PkN' # API Key
-APP_SECRET = 'a6EYCvrEiwbtjSiICuv3E3lfJytNIYiGynwul3r8MJLOisongp' # API Secret Key
-OAUTH_TOKEN = '424653294-PB9qOHQosFRCVUl2USi0pMV1TUKtAyuVbLpQd5p8' # Access Token
-OAUTH_TOKEN_SECRET = 'q4fE2q8bJrp3vAVJpU0wH80QewwzfU4MWBWbuj8a8E7wF' # Access Token Secret
+load_dotenv()
+
+APP_KEY = os.getenv('TWITTER_APP_KEY')
+APP_SECRET = os.getenv('TWITTER_APP_SECRET')
+OAUTH_TOKEN = os.getenv('TWITTER_OAUTH_TOKEN')
+OAUTH_TOKEN_SECRET = os.getenv('TWITTER_OAUTH_TOKEN_SECRET')
+
+if not all([APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET]):
+    raise RuntimeError('Configure Twitter credentials in environment variables or .env.')
 
 twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 
@@ -75,12 +82,14 @@ def get_data_user_timeline_all_pages(kid, page):
 
 
 # Datos de ejemplo, necesario modificar por vuestra instancia en MongoDB Atlas o local
-dbStringConnection = "mongodb+srv://diegopulido:fvaedpyTboVXwnyB@actividad1.rqavbwe.mongodb.net/?retryWrites=true&w=majority"
+dbStringConnection = os.getenv('MONGODB_URI')
+if not dbStringConnection:
+    raise RuntimeError('Configure MONGODB_URI in environment variables or .env.')
 
 
-dbName = 'Actividad1'
-dbCollectionA = 'twitter_Actividad_Cuentas_D'
-dbCollectionT = 'tweets_Actividad_D'
+dbName = os.getenv('MONGODB_DB_NAME', 'Actividad1')
+dbCollectionA = os.getenv('MONGODB_ACCOUNTS_COLLECTION', 'twitter_Actividad_Cuentas_D')
+dbCollectionT = os.getenv('MONGODB_TWEETS_COLLECTION', 'tweets_Actividad_D')
 
 client = pymongo.MongoClient(dbStringConnection)
 
